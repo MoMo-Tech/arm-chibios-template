@@ -58,3 +58,10 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Log files
+*.log
+*.err
+*.error
+*.warn
+*.warning
