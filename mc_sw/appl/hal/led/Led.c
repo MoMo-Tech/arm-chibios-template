@@ -54,7 +54,7 @@ static void heartBeatExec(const Led_IdType id);
 static Led_DataType Led_Data;
 static const Led_ConfigType Led_Config[LED_ID_UNKNOWN] =
 {
-	{heartBeatExec, GPIOA, GPIOA_PIN5, FALSE}
+	{heartBeatExec, GPIOB, GPIOB_LED_GREEN, FALSE}
 };
 
 void Led_Init(uint32_t rec)
