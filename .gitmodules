@@ -1,3 +1,6 @@
 [submodule "mc_sw/sc/ChibiOS"]
 	path = mc_sw/sc/ChibiOS
 	url = http://github.com/ChibiOS/ChibiOS.git
+[submodule "mc_sw/ts/buildtools"]
+	path = mc_sw/ts/buildtools
+	url = https://github.com/MoMo-Tech/buildtools.git
