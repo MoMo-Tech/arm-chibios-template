@@ -33,9 +33,6 @@ void main(void) {
   /*
      * Activates the serial driver 2 using the driver default configuration.
      */
-  palSetPadMode(GPIOC, 10, PAL_MODE_ALTERNATE(7));	/* USART3_TX */
-  palSetPadMode(GPIOC, 11, PAL_MODE_ALTERNATE(7));	/* USART3_RX */
-
   Led_Init(10u);
   Led_HeartBeat(LED_ID_USER0, 100u, 2u, 500u);
 

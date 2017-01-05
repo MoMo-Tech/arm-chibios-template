@@ -31,6 +31,9 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<sourceEntries>
+						<entry excluding="mc_sw/sc/ChibiOS/os/hal/ports/LPC|mc_sw/sc/ChibiOS/os/hal/ports/simulator|mc_sw/sc/ChibiOS/os/hal/ports/AVR|mc_sw/sc/ChibiOS/demos|mc_sw/sc/ChibiOS/testex|mc_sw/sc/ChibiOS/testhal|mc_sw/sc/ChibiOS/test|mc_sw/sc/ChibiOS/os/hal/templates" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+					</sourceEntries>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
@@ -51,4 +54,6 @@
 			<resource resourceType="PROJECT" workspacePath="/nucleo32-chibios-imu-lcd-gps"/>
 		</configuration>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cproject>

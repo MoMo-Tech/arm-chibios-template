@@ -1,7 +1,7 @@
 #include <string.h>
 
 #include "Led.h"
-#include "hal_pal.h"
+#include "Vfb.h"
 #include "SoftwareTimer.h"
 
 typedef enum Led_ExecStateTypeTag
@@ -14,7 +14,6 @@ typedef enum Led_ExecStateTypeTag
 typedef struct Led_ConfigTypeTag
 {
 	void (*exec)(const Led_IdType id);
-	stm32_gpio_t *portNumber;
 	uint32_t pinNumber;
 	uint8_t isInverted;
 } Led_ConfigType;
@@ -54,7 +53,7 @@ static void heartBeatExec(const Led_IdType id);
 static Led_DataType Led_Data;
 static const Led_ConfigType Led_Config[LED_ID_UNKNOWN] =
 {
-	{heartBeatExec, GPIOB, GPIOB_LED_GREEN, FALSE}
+	{heartBeatExec, LINE_LED_GREEN, FALSE}
 };
 
 void Led_Init(uint32_t rec)
@@ -156,11 +155,11 @@ static void setLedActive(const Led_IdType id)
 	{
 		if (Led_Data.container[id].config.isInverted)
 		{
-			palClearPad(Led_Data.container[id].config.portNumber, Led_Data.container[id].config.pinNumber);
+			Vfb_Write_Port_Line_Value(Led_Data.container[id].config.pinNumber, STD_LOW);
 		}
 		else
 		{
-			palSetPad(Led_Data.container[id].config.portNumber, Led_Data.container[id].config.pinNumber);
+			Vfb_Write_Port_Line_Value(Led_Data.container[id].config.pinNumber, STD_HIGH);
 		}
 		Led_Data.container[id].state = getLedState(id);
 	}
@@ -172,11 +171,11 @@ static void setLedInactive(const Led_IdType id)
 	{
 		if (Led_Data.container[id].config.isInverted)
 		{
-			palSetPad(Led_Data.container[id].config.portNumber, Led_Data.container[id].config.pinNumber);
+			Vfb_Write_Port_Line_Value(Led_Data.container[id].config.pinNumber, STD_HIGH);
 		}
 		else
 		{
-			palClearPad(Led_Data.container[id].config.portNumber, Led_Data.container[id].config.pinNumber);
+			Vfb_Write_Port_Line_Value(Led_Data.container[id].config.pinNumber, STD_LOW);
 		}
 		Led_Data.container[id].state = getLedState(id);
 	}
@@ -191,11 +190,11 @@ static Led_StateType getLedState(const Led_IdType id)
 
 		if (Led_Config[id].isInverted)
 		{
-			tmp = ((~palReadPad(Led_Data.container[id].config.portNumber, Led_Data.container[id].config.pinNumber)) & 1u);
+			tmp = ((~Vfb_Read_Port_Line_Value(Led_Data.container[id].config.pinNumber)) & 1u);
 		}
 		else
 		{
-			tmp = ((palReadPad(Led_Data.container[id].config.portNumber, Led_Data.container[id].config.pinNumber)) & 1u);
+			tmp = ((Vfb_Read_Port_Line_Value(Led_Data.container[id].config.pinNumber)) & 1u);
 		}
 		if (tmp != 0u)
 		{
@@ -212,7 +211,7 @@ static Led_StateType getLedState(const Led_IdType id)
 
 static void toggleLed(const Led_IdType id)
 {
-	palTogglePad(Led_Data.container[id].config.portNumber, Led_Data.container[id].config.pinNumber);
+	Vfb_Write_Port_Line_Value(Led_Data.container[id].config.pinNumber, ((~Vfb_Read_Port_Line_Value(Led_Data.container[id].config.pinNumber)) & 1u));
 	Led_Data.container[id].state = getLedState(id);
 }
 
@@ -221,22 +220,22 @@ static void toggleExec(const Led_IdType id)
 	switch (Led_Data.container[id].execState)
 	{
 	case LED_EXEC_STATE_INACTIVE:
+		swTimer_tick(Led_Data.container[id].timer.inactiveElapsed);
 		if (swTimer_isElapsed(Led_Data.container[id].timer.inactiveElapsed))
 		{
 			Led_Data.container[id].execState = LED_EXEC_STATE_ACTIVE;
 			swTimer_set(Led_Data.container[id].timer.activeElapsed, Led_Data.container[id].timer.activeReload);
 			setLedActive(id);
 		}
-		swTimer_tick(Led_Data.container[id].timer.inactiveElapsed);
 		break;
 	case LED_EXEC_STATE_ACTIVE:
+		swTimer_tick(Led_Data.container[id].timer.activeElapsed);
 		if (swTimer_isElapsed(Led_Data.container[id].timer.activeElapsed))
 		{
 			Led_Data.container[id].execState = LED_EXEC_STATE_INACTIVE;
 			swTimer_set(Led_Data.container[id].timer.inactiveElapsed, Led_Data.container[id].timer.inactiveReload);
 			setLedInactive(id);
 		}
-		swTimer_tick(Led_Data.container[id].timer.activeElapsed);
 		break;
 	default:
 		swTimer_stop(Led_Data.container[id].timer.activeElapsed);
@@ -251,6 +250,7 @@ static void heartBeatExec(const Led_IdType id)
 	switch (Led_Data.container[id].execState)
 	{
 	case LED_EXEC_STATE_INACTIVE:
+		swTimer_tick(Led_Data.container[id].timer.inactiveElapsed);
 		if (swTimer_isElapsed(Led_Data.container[id].timer.inactiveElapsed))
 		{
 			Led_Data.container[id].execState = LED_EXEC_STATE_ACTIVE;
@@ -258,9 +258,9 @@ static void heartBeatExec(const Led_IdType id)
 			Led_Data.container[id].timer.activeCyclesElapsed = Led_Data.container[id].timer.activeCyclesReload;
 			setLedActive(id);
 		}
-		swTimer_tick(Led_Data.container[id].timer.inactiveElapsed);
 		break;
 	case LED_EXEC_STATE_ACTIVE:
+		swTimer_tick(Led_Data.container[id].timer.activeElapsed);
 		if (swTimer_isElapsed(Led_Data.container[id].timer.activeElapsed))
 		{
 			if (Led_Data.container[id].timer.activeCyclesElapsed == 0u)
@@ -276,7 +276,6 @@ static void heartBeatExec(const Led_IdType id)
 				toggleLed(id);
 			}
 		}
-		swTimer_tick(Led_Data.container[id].timer.activeElapsed);
 		break;
 	default:
 		swTimer_stop(Led_Data.container[id].timer.activeElapsed);

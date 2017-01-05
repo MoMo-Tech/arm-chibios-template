@@ -50,6 +50,7 @@ $(CHIBIOS)/os/common/oslib/src/chheap.c \
 $(CHIBIOS)/os/common/oslib/src/chmempools.c \
 $(CHIBIOS)/os/common/ports/ARMCMx/chcore.c \
 $(CHIBIOS)/os/common/ports/ARMCMx/chcore_v7m.c \
+../sc/Vfb/Vfb.c \
 ../sc/OsWrapper/Os.c \
 ../cfg/board/board.c \
 ../cfg/gen/Os_Cfg.c \
@@ -88,6 +89,7 @@ ${CHIBIOS}/test/lib \
 ${CHIBIOS}/test/rt \
 ${CHIBIOS}/test/rt/source/test \
 $(CHIBIOS)/os/license \
+../sc/Vfb \
 ../sc/OsWrapper \
 ../cfg/board \
 ../cfg/gen \
